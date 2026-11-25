@@ -28,3 +28,26 @@ shared 16-image manifest, `comparison.json` for the two-model run, and a
 per-model directory with predictions, accuracies, timings, and both prototype
 sets. For GitHub, commit the source and documentation. The dataset and raw
 outputs are excluded by `.gitignore`.
+
+## Checkpoint 3 — SigLIP contrastive LoRA
+
+Run Checkpoint 1 first to generate the SigLIP baseline and split manifest.
+Then run the following in the same environment:
+
+```bash
+python run_checkpoint3.py --device auto --offline
+```
+
+This fits rank-4 adapters on the query and value projections in the last two
+image blocks. Each of 50 optimizer steps uses the 16 fixed reference images
+and 16 class prompts with the pairwise SigLIP objective. The learning rate is
+`1e-4`. The text encoder and original image weights are frozen. The test set
+is scored once after fitting. Remove `--offline` if the model is not cached.
+
+The saved adapter can be evaluated again with:
+
+```bash
+python run_checkpoint3.py --device auto --offline \
+  --adapter outputs/checkpoint3/adapter.safetensors \
+  --output-dir outputs/checkpoint3_replay
+```
